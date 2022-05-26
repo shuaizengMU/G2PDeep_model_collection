@@ -1,20 +1,16 @@
-from typing import Dict, Text
-
+"""Main file to conduct single fold experiment."""
 from sklearn.model_selection import train_test_split
-from tensorflow import keras
+
 from keras.callbacks import EarlyStopping
 import numpy as np
 import pandas as pd
-import attr
 
-from metrics import evaluation_util
+from metrics import evaluation_util, callback_metrics
 from common import keys
 
 from model_interpreter import saliency_map
 from data_loader import process_snp_data
-from models import experiment_config
-from models import dual_cnn
-from metrics import callback_metrics
+from models import dual_cnn, training_config
 
 import tensorflow as tf
 import os
@@ -24,7 +20,7 @@ from absl import flags
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('data_dir', './public_data/SoyNAM', 'Dirctory of dataset')
-flags.DEFINE_string('result_dir', './results', 'Dirctory of output')
+flags.DEFINE_string('result_dir', './results/single_fold', 'Dirctory of output')
 flags.DEFINE_string('dataset_type', 'height',
                     'Type of dataset (height|oil|moisture|protein|yield).')
 
@@ -33,18 +29,17 @@ def train_model():
   """train model
   """
   training_filename = os.path.join(FLAGS.data_dir,
-                                   "%s.train.csv" % (FLAGS.dataset_type))
-  test_filename = os.path.join(FLAGS.data_dir,
-                               "%s.test.csv" % (FLAGS.dataset_type))
+                                   f'{FLAGS.dataset_type}.train.csv')
+  test_filename = os.path.join(FLAGS.data_dir, f'{FLAGS.dataset_type}.test.csv')
 
   dataset_dict = process_snp_data.load_snp_data_with_multi_labels(
-      training_filename, ["label"], data_type='zygosity')
+      training_filename, ['label'], data_type='zygosity')
 
   x_other = dataset_dict[keys.KEY_FEATURES]
   y_other = dataset_dict[keys.KEY_LABEL]
 
   dataset_dict = process_snp_data.load_snp_data_with_multi_labels(
-      test_filename, ["label"], data_type='zygosity')
+      test_filename, ['label'], data_type='zygosity')
 
   x_test = dataset_dict[keys.KEY_FEATURES]
   y_test = dataset_dict[keys.KEY_LABEL]
@@ -55,17 +50,16 @@ def train_model():
                                                         test_size=len(x_test))
 
   # define model
-  experimental_params = experiment_config.ExperimentalParams()
-  model_hyperparams = dual_cnn.ModelHParamsDuallCNN()
+  training_hparams = training_config.TrainingHParams()
+  model_hparams = dual_cnn.ModelHParamsDuallCNN()
 
-  # model = model_deep_gwas.DeepGwasModel(model_hyperparams)
-  model = dual_cnn.make_dual_cnn_model(x_train,
-                                       x_train.shape[-1],
-                                       model_hyperparams)
+  # model = model_deep_gwas.DeepGwasModel(model_hparams)
+  model = dual_cnn.make_dual_cnn_model(x_train, x_train.shape[-1],
+                                       model_hparams)
   model.compile(
-      loss=experimental_params.loss,
-      optimizer=experimental_params.optimizer,
-      metrics=[experimental_params.metrics, callback_metrics.pearsonr])
+      loss=training_hparams.loss,
+      optimizer=training_hparams.optimizer,
+      metrics=[training_hparams.metrics, callback_metrics.pearsonr])
 
   early_stopping = EarlyStopping(monitor='val_mae',
                                  patience=6,
@@ -75,8 +69,8 @@ def train_model():
   # model training
   model.fit(x=x_train,
             y=y_train,
-            batch_size=experimental_params.batch_size,
-            epochs=experimental_params.epochs,
+            batch_size=training_hparams.batch_size,
+            epochs=training_hparams.epochs,
             validation_data=(x_valid, y_valid),
             verbose=1,
             callbacks=[early_stopping])
@@ -112,5 +106,5 @@ def main(_):
   train_model()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   app.run(main)

@@ -5,7 +5,7 @@ import attr
 
 
 @attr.s(auto_attribs=True)
-class ExperimentalParams:
+class TrainingHParams:
   """
   Arrtributes:
     learning_rate: int, learning rate. Defaul is 0.001.
@@ -14,6 +14,7 @@ class ExperimentalParams:
     loss: str, name of loss function. Default is `mse`.
     metrics: str, name of metrics to evaluate model. Default is `mae`.
     batch_size: int, batch size. Default is 32.
+    early_stopping_patience: int, patience in early stopping. Default is 5
   """
   learning_rate: float = 0.0001
   epochs: int = 1
@@ -21,20 +22,22 @@ class ExperimentalParams:
   loss: Text = 'mse'
   metrics: Text = 'mae'
   batch_size: int = 32
+  early_stopping_patience = 5
 
   @classmethod
-  def from_dict(cls, experimental_parameters: Dict):
+  def from_dict(cls, training_hparams: Dict):
     """extracting values from model.
     Args:
         query_set (Dict): query set from model.
     Returns:
-        db_config: initalized experimental_parameters.
+        db_config: initalized training hyperparameters.
     """
     return cls(
-        learning_rate=experimental_parameters['learning_rate'],
-        epochs=experimental_parameters['epochs'],
-        optimizer=experimental_parameters['optimizer'],
-        loss=experimental_parameters['loss'],
-        metrics=experimental_parameters['metrics'],
-        batch_size=experimental_parameters['batch_size'],
+        learning_rate=training_hparams['learning_rate'],
+        epochs=training_hparams['epochs'],
+        optimizer=training_hparams['optimizer'],
+        loss=training_hparams['loss'],
+        metrics=training_hparams['metrics'],
+        batch_size=training_hparams['batch_size'],
+        early_stopping_patience=training_hparams['early_stopping_patience'],
     )

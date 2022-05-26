@@ -6,10 +6,10 @@ import numpy as np
 import attr
 
 
-# Model hyperparameters for Dual CNN model
 @attr.s(auto_attribs=True)
 class ModelHParamsDuallCNN:
-  """
+  """Model hyperparameters for Dual CNN model.
+
   Attributes:
   left_tower_filters_list: list of int number. Each element represents number
     of filters. Lenght of it is number of layers. Default to [10, 10].
@@ -39,19 +39,19 @@ class ModelHParamsDuallCNN:
   dropout_rate: float = 0.75
 
   @classmethod
-  def from_dict(cls, model_hyperparams: Dict):
+  def from_dict(cls, hparams: Dict):
     return cls(
-        left_tower_filters_list=model_hyperparams['left_tower_filters_list'],
-        left_tower_kernel_size_list=model_hyperparams[
+        left_tower_filters_list=hparams['left_tower_filters_list'],
+        left_tower_kernel_size_list=hparams[
             'left_tower_kernel_size_list'],
-        right_tower_filters_list=model_hyperparams['right_tower_filters_list'],
-        right_tower_kernel_size_list=model_hyperparams[
+        right_tower_filters_list=hparams['right_tower_filters_list'],
+        right_tower_kernel_size_list=hparams[
             'right_tower_kernel_size_list'],
-        central_tower_filters_list=model_hyperparams[
+        central_tower_filters_list=hparams[
             'central_tower_filters_list'],
-        central_tower_kernel_size_list=model_hyperparams[
+        central_tower_kernel_size_list=hparams[
             'central_tower_kernel_size_list'],
-        dnn_size_list=model_hyperparams['dnn_size_list'],
+        dnn_size_list=hparams['dnn_size_list'],
     )
 
 
